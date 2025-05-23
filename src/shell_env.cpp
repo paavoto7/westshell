@@ -10,4 +10,7 @@ ShellEnv::ShellEnv() {
     homeDir = pw->pw_dir;
 
     mainPid = getpid();
+
+    // Needed to be done here as we need the home dir
+    history = History(homeDir);
 }

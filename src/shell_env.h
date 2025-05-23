@@ -3,13 +3,15 @@
 
 #include <string>
 
-/* Encapsulates global shell environment.
-*/
+#include "history.h"
+
+// Encapsulates global shell environment.
 class ShellEnv {
 public:
     std::string user;
     std::string homeDir;
     pid_t mainPid;
+    History history;
 
     ShellEnv();
 };
