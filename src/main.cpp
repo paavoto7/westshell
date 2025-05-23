@@ -5,52 +5,49 @@
 #include <vector>
 #include <sstream>
 #include <filesystem>
-#include <unistd.h>
-#include <pwd.h>
 #include <sys/wait.h>
 #include <string.h>
 
-using namespace std;
+#include "builtins.h"
+#include "shell_env.h"
 
-inline vector<char *> parser(const string& command);
-inline void freeCommand(const vector<char *>& command);
+inline std::vector<char *> parser(const std::string& command);
+inline void freeCommand(const std::vector<char *>& command);
 
 int main() {
-    // Get required information about the user
-    const struct passwd* pw = getpwuid(geteuid());
-    const string user = pw->pw_name;
-    const string homeDir = pw->pw_dir;
-
-    const pid_t mainPid = getpid();
     
-    string command;
+    const ShellEnv shellEnv;
+    
+    std::string command;
     
     while (true) {
         // Get the path and modify it to be printed in the shell
-        auto path = filesystem::current_path().string();
-        if (path.find(homeDir) == 0) {
-            path.replace(0, homeDir.length(), "~");
+        auto path = std::filesystem::current_path().string();
+        if (path.find(shellEnv.homeDir) == 0) {
+            path.replace(0, shellEnv.homeDir.length(), "~");
         }
         
-        cout << user << ":" << path << "$ ";
+        std::cout << shellEnv.user << ":" << path << "$ ";
 
         getline(std::cin, command);
         
         // Get the space parsed command and arguments
-        const vector<char *> commands = parser(command);
+        const std::vector<char *> commands = parser(command);
         
         // Just a quick hack for some builtins now
-        if (command.empty()) {
-            continue;
-        } else if (strcmp(commands[0], "exit") == 0) {
-            break;
-        } else if (strcmp(commands[0], "cd") == 0) {
-            // If no path provided, go to home dir
-            chdir(commands[1] ? commands[1] : homeDir.c_str());
+        auto control = Builtins::handleBuiltin(command, commands, shellEnv);
+        using Builtins::Control;    
 
+        // Go in if it was a builtin
+        if (control != Control::NONE) {
             // Free the dynamically allocated c-strings
             freeCommand(commands);
-            continue;
+
+            if (control == Control::CONTINUE) {
+                continue;
+            } else if (control == Control::BREAK) {
+                break;
+            }
         }
         
         const pid_t childPid = fork();
@@ -74,12 +71,12 @@ int main() {
 /* A simple whitespace parser.
    Will need to rethink this later as it is not that safe.
 */
-inline vector<char *> parser(const string& command) {
-    vector<char *> commands;
+inline std::vector<char *> parser(const std::string& command) {
+    std::vector<char *> commands;
 
-    stringstream ss(command);
+    std::stringstream ss(command);
     
-    string token;
+    std::string token;
     while (getline(ss, token, ' ')) {
         commands.push_back(strdup(token.c_str()));
     }
@@ -90,7 +87,7 @@ inline vector<char *> parser(const string& command) {
     
 }
 
-inline void freeCommand(const vector<char *>& command) {
+inline void freeCommand(const std::vector<char *>& command) {
     for (auto* arg: command) {
         free(arg); // Now also performed on nullptr
     }
