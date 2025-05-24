@@ -5,8 +5,7 @@
 #include <filesystem>
 
 // Initializes the history object by loading entries from the history file
-History::History(std::string homeDir): homeDir(homeDir) {
-    const std::string filename = ".westshell_history";
+History::History(const std::string& homeDir): homeDir(homeDir) {
     fileLocation = homeDir + "/" + filename;
     
     std::ifstream historyFile;
@@ -30,21 +29,30 @@ History::History(std::string homeDir): homeDir(homeDir) {
     }
 }
 
-// Saves a new history entry to both memory and the history file
+// On program end, write to the history file
+History::~History() {
+    std::ofstream historyFile;
+    historyFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
+
+    // The following always writes all again, even when history lower than max
+    try {
+        historyFile.open(fileLocation);
+        int lines = history.size();
+        int index = lines > maxLines ? lines - maxLines : 0;
+        // Write only maxLines amount ignoring the old commands
+        for (int i = index; i < lines; ++i) {
+            historyFile << history[i] << std::endl;
+        }
+    } catch (const std::ofstream::failure& e) {
+        std::cerr << "File open/write failed: " << e.what() << std::endl;
+    }
+}
+
+// Saves a new history entry to memory
 void History::saveEntry(const std::string& command) {
     if (command.empty()) return;
 
     history.push_back(command);
-    
-    std::ofstream historyFile;
-    historyFile.exceptions(std::ofstream::failbit | std::ofstream::badbit);
-
-    try {
-        historyFile.open(fileLocation, std::ios::app); // Append mode
-        historyFile << command << std::endl;
-    } catch (const std::ifstream::failure& e) {
-        std::cerr << "File open/write failed: " << e.what() << std::endl;
-    }
 }
 
 // Returns the history entry at the given index, clamped to valid bounds

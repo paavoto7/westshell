@@ -27,6 +27,8 @@ int main() {
     const std::string PATH = getenv("PATH");
     
     std::string command;
+
+    int exitCode = 0;
     
     // Might want to create a seperate function or class running main loop
     while (true) {
@@ -64,6 +66,7 @@ int main() {
             if (control == Control::CONTINUE) {
                 continue;
             } else if (control == Control::BREAK) {
+                // Need to add support for exit codes at some point
                 break;
             }
         }
