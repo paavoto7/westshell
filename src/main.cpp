@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <sstream>
 #include <filesystem>
@@ -13,6 +14,7 @@
 #include "builtins.h"
 #include "shell_env.h"
 #include "history.h"
+#include "style.h"
 
 inline std::vector<char *> parser(const std::string& command);
 inline void freeCommand(const std::vector<char *>& command);
@@ -34,7 +36,9 @@ int main() {
             path.replace(0, shellEnv.homeDir.length(), "~");
         }
         
-        std::cout << shellEnv.user << ":" << path << "$ ";
+        std::cout
+            << Style::bright_green << shellEnv.user << Style::reset
+            << ":" << Style::bright_blue << path << Style::reset << "$ ";
 
         getline(std::cin, command);
         
