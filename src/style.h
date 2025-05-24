@@ -2,8 +2,8 @@
 #define STYLE_H
 
 #include <iostream>
-#include <string>
 #include <string_view>
+#include <unordered_map>
 
 namespace Style {
 
@@ -55,6 +55,49 @@ namespace Style {
 
     inline void print(std::string_view text, std::string_view style) {
         std::cout << style << text << reset;
+    }
+
+    std::string_view getColorCode(std::string_view colorName) {
+        static const std::unordered_map<std::string_view, std::string_view> colorMap = {
+            {"black", Style::black},
+            {"red", Style::red},
+            {"green", Style::green},
+            {"yellow", Style::yellow},
+            {"blue", Style::blue},
+            {"magenta", Style::magenta},
+            {"cyan", Style::cyan},
+            {"white", Style::white},
+            {"bright_black", Style::bright_black},
+            {"bright_red", Style::bright_red},
+            {"bright_green", Style::bright_green},
+            {"bright_yellow", Style::bright_yellow},
+            {"bright_blue", Style::bright_blue},
+            {"bright_magenta", Style::bright_magenta},
+            {"bright_cyan", Style::bright_cyan},
+            {"bright_white", Style::bright_white},
+            {"bg_black", Style::bg_black},
+            {"bg_red", Style::bg_red},
+            {"bg_green", Style::bg_green},
+            {"bg_yellow", Style::bg_yellow},
+            {"bg_blue", Style::bg_blue},
+            {"bg_magenta", Style::bg_magenta},
+            {"bg_cyan", Style::bg_cyan},
+            {"bg_white", Style::bg_white},
+            {"bg_bright_black", Style::bg_bright_black},
+            {"bg_bright_red", Style::bg_bright_red},
+            {"bg_bright_green", Style::bg_bright_green},
+            {"bg_bright_yellow", Style::bg_bright_yellow},
+            {"bg_bright_blue", Style::bg_bright_blue},
+            {"bg_bright_magenta", Style::bg_bright_magenta},
+            {"bg_bright_cyan", Style::bg_bright_cyan},
+            {"bg_bright_white", Style::bg_bright_white},
+        };
+
+        auto it = colorMap.find(colorName);
+        if (it != colorMap.end()) {
+            return it->second;
+        }
+        return Style::reset; // fallback
     }
 
 }

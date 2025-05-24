@@ -9,11 +9,13 @@
 bool CommandLookup::findExecutable(const char* command, const std::string& PATH) {
     const std::string cmdStr(command);
     
+    // Check if present in cache
     auto item = lookupCache.find(cmdStr);
     if (item != lookupCache.end()) {
         return item->second;
     }
 
+    // Check for absolute paths
     if (cmdStr.find('/') != std::string::npos) {
         bool exists = access(command, X_OK) == 0;
         lookupCache[cmdStr] = exists;

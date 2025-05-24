@@ -25,6 +25,8 @@ int main() {
     std::string command;
 
     int exitCode = 0;
+    const std::string primaryColour = "primaryColour";
+    const std::string secondaryColour = "secondaryColour";
     
     // Might want to create a seperate function or class running main loop
     while (true) {
@@ -34,24 +36,23 @@ int main() {
             path.replace(0, shellEnv.homeDir.length(), "~");
         }
         
+        // This needs to be cleaner
         std::cout
-            << Style::bright_green << shellEnv.user << Style::reset
-            << ":" << Style::bright_blue << path << Style::reset << "$ ";
+            << Style::getColorCode(shellEnv.getSetting(primaryColour)) << shellEnv.user << Style::reset
+            << ":" << Style::getColorCode(shellEnv.getSetting(secondaryColour)) << path << Style::reset << "$ ";
 
         getline(std::cin, command);
         
         // Get the space parsed command and arguments
         const std::vector<char *> commands = parser(command);
         
-        // Just a quick hack for some builtins now
+        // Check if command builtin and if so, execute it
         auto control = Builtins::handleBuiltin(command, commands, shellEnv);
         using Builtins::Control;
 
         // Add to history if not empty
         if (control != Control::EMPTY) {
             shellEnv.history.saveEntry(command);
-        } else {
-            continue;
         }
 
         // Go in if command was a builtin
@@ -59,11 +60,11 @@ int main() {
             // Free the dynamically allocated c-strings
             freeCommand(commands);
 
-            if (control == Control::CONTINUE) {
-                continue;
-            } else if (control == Control::BREAK) {
+            if (control == Control::BREAK) {
                 // Need to add support for exit codes at some point
                 break;
+            } else { // Continue and Empty controls
+                continue;
             }
         }
         

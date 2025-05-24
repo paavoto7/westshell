@@ -12,12 +12,16 @@ Commands are parsed by splitting on spaces, so only simple commands (for example
 
 Some limitations (possible improvements):
 - No support for piping (|)
-
 - No support for quoted arguments ("like this")
-
 - No input/output redirection
-
 - No background processes
+
+## Settings file
+The user settings can be set in .westshell.ini file in the home directory of the
+user. The format supported is `key=value` per line without spaces.
+
+The primary colour is set by *primaryColour* and secondary by *secondaryColour*.
+No other ones are supported as of now.
 
 ### Why C++?
 While the program is largely procedural and could be written in C, I chose C++

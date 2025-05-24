@@ -1,7 +1,9 @@
 #ifndef SHELLENV_H
 #define SHELLENV_H
 
+#include <unordered_map>
 #include <string>
+#include <string_view>
 
 #include "history.h"
 #include "command_lookup.h"
@@ -19,7 +21,14 @@ public:
     CommandLookup commandLookup;
 
     ShellEnv();
-};
 
+    const std::unordered_map<std::string, std::string>& getSettings() const;
+    std::string_view getSetting(const std::string& key) const;
+    
+private:
+    std::unordered_map<std::string, std::string> settings;
+    
+    void parseSettings();
+};
 
 #endif // SHELLENV_H
