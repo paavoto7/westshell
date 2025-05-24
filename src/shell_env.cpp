@@ -9,6 +9,7 @@ ShellEnv::ShellEnv() {
     user = pw->pw_name;
     homeDir = pw->pw_dir;
 
+    PATH = getenv("PATH");
     mainPid = getpid();
 
     // Needed to be done here as we need the home dir

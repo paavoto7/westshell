@@ -36,6 +36,11 @@ namespace Builtins {
             Builtins::history(shellEnv.history);
             return Control::CONTINUE;
         }
+        else if (strcmp(args[0], "hash") == 0) {
+            // If no path provided, go to home dir
+            Builtins::hash(shellEnv.commandLookup.getLookup());
+            return Control::CONTINUE;
+        }
         else {
             return Control::NONE;
         }
@@ -55,6 +60,17 @@ namespace Builtins {
         // Print all commands of the history vector
         for (const auto& command: history.getAll()) {
             std::cout << command << "\n";
+        }
+        std::cout << std::flush;
+    }
+
+    // Print the cached commands
+    void hash(const std::unordered_map<std::string, bool>& lookupCache) {
+        std::cout << "command:\n";
+        for (auto& [command, found]: lookupCache) {
+            if (found) {
+                std::cout << command << "\n";
+            }
         }
         std::cout << std::flush;
     }

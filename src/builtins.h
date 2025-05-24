@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 #include "shell_env.h"
 
@@ -23,6 +24,7 @@ namespace Builtins {
     void cd(const char* path, const std::string& homeDir);
     void echo(const char* message);
     void history(const History& history);
+    void hash(const std::unordered_map<std::string, bool>& lookupCache);
 }
 
 #endif // BUILTINS_H
