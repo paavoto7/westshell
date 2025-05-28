@@ -1,42 +1,37 @@
 #include "builtins.h"
 
 #include <iostream>
+#include <cstring>
 #include <unistd.h>
-#include <string.h>
 
 #include "history.h"
 
 namespace Builtins {
     
     /* Calls a builtin if command is one and returns the appropriate Control code.
-       Return Control::NONE if command not empty or builtin.
+       Return Control::NONE if command is not a builtin.
     */
-    Control handleBuiltin(
-        const std::string& command, const std::vector<char *>& args, const ShellEnv& shellEnv
-    ) {
+    Control handleBuiltin(const std::vector<char*>& args, const ShellEnv& shellEnv) {
         // The following is a bit inefficient and unmaintainable so rethink is in order
-        // Could use an unorder map and functions as values for example
-        if (command.empty()) {
-            return Control::EMPTY;
-        }
-        else if (strcmp(args[0], "exit") == 0) {
+        // Could use an unordered map and functions as values for example
+        if (std::strcmp(args[0], "exit") == 0) {
             return Control::BREAK;
         }
-        else if (strcmp(args[0], "cd") == 0) {
+        else if (std::strcmp(args[0], "cd") == 0) {
             Builtins::cd(args[1], shellEnv.homeDir);
             return Control::CONTINUE;
         }
-        else if (strcmp(args[0], "echo") == 0) {
+        else if (std::strcmp(args[0], "echo") == 0) {
             // If no path provided, go to home dir
             Builtins::echo(args[1]);
             return Control::CONTINUE;
         }
-        else if (strcmp(args[0], "history") == 0) {
+        else if (std::strcmp(args[0], "history") == 0) {
             // If no path provided, go to home dir
             Builtins::history(shellEnv.history);
             return Control::CONTINUE;
         }
-        else if (strcmp(args[0], "hash") == 0) {
+        else if (std::strcmp(args[0], "hash") == 0) {
             // If no path provided, go to home dir
             Builtins::hash(shellEnv.commandLookup.getLookup());
             return Control::CONTINUE;
@@ -53,13 +48,13 @@ namespace Builtins {
     }
 
     void echo(const char* message) {
-        std::cout << (message ? message : "") << std::endl;
+        std::cout << (message ? message : "\n") << std::flush;
     }
 
     void history(const History& history) {
         // Print all commands of the history vector
         for (const auto& command: history.getAll()) {
-            std::cout << command << "\n";
+            std::cout << command << '\n';
         }
         std::cout << std::flush;
     }
@@ -69,7 +64,7 @@ namespace Builtins {
         std::cout << "command:\n";
         for (auto& [command, found]: lookupCache) {
             if (found) {
-                std::cout << command << "\n";
+                std::cout << command << '\n';
             }
         }
         std::cout << std::flush;

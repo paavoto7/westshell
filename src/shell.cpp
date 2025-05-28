@@ -23,23 +23,28 @@ int Shell::run() {
         printPrompt(promptPath);
 
         getline(std::cin, command);
+
+        if (command.empty()) continue;
         
         // Get the space parsed command and arguments
-        const std::vector<char *> commands = Parser::parser(command);
+        std::vector<std::string> parsedCommand = Parser::parser(command);
+
+        // Moved this here so we avoid explicit dynamic memory allocation
+        std::vector<char*> commands;
+        for (auto& cmdstr: parsedCommand) {
+            commands.push_back(cmdstr.data());
+        }
+        commands.push_back(nullptr);
         
         // Check if command is a builtin and if so, execute it
-        auto control = Builtins::handleBuiltin(command, commands, shellEnv);
+        auto control = Builtins::handleBuiltin(commands, shellEnv);
         using Builtins::Control;
 
-        // Add to history if not empty
-        if (control != Control::EMPTY) {
-            shellEnv.history.saveEntry(command);
-        }
+        // Add to history
+        shellEnv.history.saveEntry(command);
 
         // Go in if command was a builtin
         if (control != Control::NONE) {
-            freeCommand(commands);
-
             if (control == Control::BREAK) {
                 // Need to add support for exit codes at some point
                 break;
@@ -51,15 +56,12 @@ int Shell::run() {
         if (!commandLookup.findExecutable(commands[0], shellEnv.PATH)) {
             // Currently makes no distinction between not found and no permission
             std::cout << commands[0] << ": Command not found or no permission" << std::endl;
-            freeCommand(commands);
             continue;
         }
         
         if (!executeExternalCommand(commands, exitCode)) {
-            freeCommand(commands);
             break;
         }
-        freeCommand(commands);
     }
     return exitCode;
 }
@@ -100,11 +102,4 @@ bool Shell::executeExternalCommand(const std::vector<char*>& args, int& exitCode
         }
     }
     return true;
-}
-
-// Frees the dynamically allocated command
-void Shell::freeCommand(const std::vector<char*>& command) const {
-    for (auto* arg: command) {
-        free(arg); // Now also performed on nullptr
-    }
 }

@@ -4,22 +4,18 @@
 #include <vector>
 #include <sstream>
 #include <string>
-#include <string.h>
 
 namespace Parser {
-    /* A simple whitespace parser.
-       Will need to rethink this later as it is not that safe.
-    */
-    inline std::vector<char *> parser(const std::string& command) {
-        std::vector<char *> commands;
+    // A simple whitespace parser.
+    inline std::vector<std::string> parser(const std::string& command) {
+        std::vector<std::string> commands;
 
         std::stringstream ss(command);
         
         std::string token;
         while (getline(ss, token, ' ')) {
-            commands.push_back(strdup(token.c_str()));
+            commands.push_back(token);
         }
-        commands.push_back(nullptr);
         
         return commands;
     }
