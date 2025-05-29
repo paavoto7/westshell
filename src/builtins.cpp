@@ -48,7 +48,7 @@ namespace Builtins {
     }
 
     void echo(const char* message) {
-        std::cout << (message ? message : "\n") << std::flush;
+        std::cout << (message ? message : "") << std::endl;
     }
 
     void history(const History& history) {

@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "builtins.h"
 #include "style.h"
+#include "signals.h"
 
 Shell::Shell() : shellEnv(), commandLookup(shellEnv.commandLookup) {}
 
@@ -22,9 +23,23 @@ int Shell::run() {
         
         printPrompt(promptPath);
 
-        getline(std::cin, command);
-
-        if (command.empty()) continue;
+        if (!getline(std::cin, command)) {
+            // Input error or EOF
+            std::cout << '\n';
+            break;
+        }
+        
+        // The signals don't work well with getline
+        // Might need to use something else instead of getline
+        if (Signals::signalStatus != 0) {
+            Signals::signalStatus = 0;
+            break;
+        }
+        
+        // Ignore if empty or only whitespace
+        if (command.empty() || command.find_first_not_of(' ') == std::string::npos) {
+            continue;
+        }
         
         // Get the space parsed command and arguments
         std::vector<std::string> parsedCommand = Parser::parser(command);
