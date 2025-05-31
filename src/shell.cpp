@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <sys/wait.h>
 
-#include "parser.h"
+#include "parsing/parser.h"
 #include "builtins.h"
 #include "style.h"
 #include "signals.h"
@@ -42,7 +42,8 @@ int Shell::run() {
         }
         
         // Get the space parsed command and arguments
-        std::vector<std::string> parsedCommand = Parser::parser(command);
+        // Using the simple parser before supporting the new parser
+        std::vector<std::string> parsedCommand = Parser::simpleParser(command);
 
         // Moved this here so we avoid explicit dynamic memory allocation
         std::vector<char*> commands;
