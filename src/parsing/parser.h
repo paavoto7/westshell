@@ -3,27 +3,29 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 #include "tokenizer.h"
+#include "command.h"
 
 namespace Parser {
-    // Contains executable name, arguments and flag for piping
-    // Need to add support for other operators
-    struct Command {
-        std::string executable;
-        std::vector<std::string> args;
-        bool piped = false;
+
+    // Set of recognized operator characters
+    inline const std::unordered_map<std::string, Operator> operators {
+        {"|", Operator::Pipe},
+        {">", Operator::Redirection},
+        {"&", Operator::Background}
     };
 
     // A simple whitespace parser.
     std::vector<std::string> simpleParser(const std::string& command);
 
     // Parses the given tokens into a vector of commands to be executed
-    std::vector<Command> parser(const std::vector<Tokenizer::Token>& tokens);
+    std::vector<Command> parse(const std::vector<Tokenizer::Token>& tokens);
     
     // Calls tokenize function and passes the return value to overloaded function
-    inline std::vector<Command> parser(const std::string& command) {
-        return parser(Tokenizer::tokenize(command));    
+    inline std::vector<Command> parse(const std::string& command) {
+        return parse(Tokenizer::tokenize(command));    
     };
     
 } // namespace Parser

@@ -1,7 +1,6 @@
 #include "builtins.h"
 
 #include <iostream>
-#include <cstring>
 #include <unistd.h>
 
 #include "history.h"
@@ -11,44 +10,42 @@ namespace Builtins {
     /* Calls a builtin if command is one and returns the appropriate Control code.
        Return Control::NONE if command is not a builtin.
     */
-    Control handleBuiltin(const std::vector<char*>& args, const ShellEnv& shellEnv) {
-        // The following is a bit inefficient and unmaintainable so rethink is in order
-        // Could use an unordered map and functions as values for example
-        if (std::strcmp(args[0], "exit") == 0) {
-            return Control::BREAK;
+    Control handleBuiltin(const Command& cmd, const ShellEnv& shellEnv) {
+        auto iter = builtin_commands.find(cmd.executable);
+        if (iter != builtin_commands.end()) {
+            switch (iter->second) {
+                case Builtin::exit:
+                    return Control::BREAK;
+
+                case Builtin::cd:
+                    // If no path provided, go to home dir
+                    Builtins::cd(!cmd.args.empty() ? cmd.args[0] : shellEnv.homeDir);
+                    return Control::CONTINUE;
+
+                case Builtin::echo:
+                    // If no arguments, print an empty line
+                    Builtins::echo(!cmd.args.empty() ? cmd.args[0] : "");
+                    return Control::CONTINUE;
+
+                case Builtin::history:
+                    Builtins::history(shellEnv.history);
+                    return Control::CONTINUE;
+
+                case Builtin::hash:
+                    Builtins::hash(shellEnv.commandLookup.getLookup());
+                    return Control::CONTINUE;
+            }
         }
-        else if (std::strcmp(args[0], "cd") == 0) {
-            Builtins::cd(args[1], shellEnv.homeDir);
-            return Control::CONTINUE;
-        }
-        else if (std::strcmp(args[0], "echo") == 0) {
-            // If no path provided, go to home dir
-            Builtins::echo(args[1]);
-            return Control::CONTINUE;
-        }
-        else if (std::strcmp(args[0], "history") == 0) {
-            // If no path provided, go to home dir
-            Builtins::history(shellEnv.history);
-            return Control::CONTINUE;
-        }
-        else if (std::strcmp(args[0], "hash") == 0) {
-            // If no path provided, go to home dir
-            Builtins::hash(shellEnv.commandLookup.getLookup());
-            return Control::CONTINUE;
-        }
-        else {
-            return Control::NONE;
-        }
+        return Control::NONE;
     }
     
-    void cd(const char* path, const std::string& homeDir) {
-        // If no path provided, go to home dir
-        if (chdir(path ? path : homeDir.c_str()) == -1)
+    void cd(const std::string& path) {
+        if (chdir(path.c_str()) == -1)
             perror("cd");
     }
 
-    void echo(const char* message) {
-        std::cout << (message ? message : "") << std::endl;
+    void echo(const std::string& message) {
+        std::cout << message << std::endl;
     }
 
     void history(const History& history) {

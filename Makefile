@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX := g++
-CXXFLAGS := -Wall -Wextra -std=c++17
+CXXFLAGS := -Wall -Wextra -std=c++17 -I src
 
 # Source and build directories
 SRC_DIR := src

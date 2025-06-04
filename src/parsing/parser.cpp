@@ -17,7 +17,7 @@ namespace Parser {
         return commands;
     }
 
-    std::vector<Command> parser(const std::vector<Tokenizer::Token>& tokens) {
+    std::vector<Command> parse(const std::vector<Tokenizer::Token>& tokens) {
         std::vector<Command> commands;
         commands.emplace_back(); // Create first command
         Command* current = &commands.back();
@@ -36,9 +36,7 @@ namespace Parser {
                     current->args.push_back(token.text);
                     break;
                 case TokenType::Operator:
-                    if (token.text == "|") {
-                        current->piped = true;
-                    }
+                    current->op = operators.at(token.text);
                     // In case of an operator, add another command
                     commands.emplace_back();
                     current = &commands.back();
