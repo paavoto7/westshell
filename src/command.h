@@ -12,6 +12,9 @@ struct Command {
     std::string executable;
     std::vector<std::string> args;
     Operator op = Operator::None;
+
+    std::string inFile;
+    std::string outFile;
 };
 
 #endif // COMMAND_H

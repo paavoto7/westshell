@@ -3,18 +3,23 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <pwd.h>
 
-ShellEnv::ShellEnv() {
+ShellEnv::ShellEnv()
+    : mainPid(getpid()),
+    PATH(getenv("PATH") ? getenv("PATH") : "")
+{
     // Get required information about the user
     struct passwd* pw = getpwuid(geteuid());
+    if (!pw) {
+        perror("Getpwuid fail");
+        exit(1);
+    }
     user = pw->pw_name;
     homeDir = pw->pw_dir;
-    parseSettings();
-
-    PATH = getenv("PATH");
-    mainPid = getpid();
+    parseSettings(); // Needs home directory
 
     // Needed to be done here as we need the home dir
     history = History(homeDir);
@@ -34,6 +39,25 @@ std::string_view ShellEnv::getSetting(const std::string& key) const {
     return item != settings.end() ? item->second : empty;
 }
 
+void ShellEnv::addBackgroundJob(pid_t pid) {
+    background_jobs.insert(pid);
+}
+
+void ShellEnv::reapBackgroundJobs() {
+    int status;
+    pid_t child;
+    // Check if any child process has finished and if so, remove it from the set
+    while ((child = waitpid(-1, &status, WNOHANG)) > 0) {
+        auto it = background_jobs.find(child);
+        if (it != background_jobs.end()) {
+            background_jobs.erase(child);
+        }
+    }
+}
+
+const std::unordered_set<pid_t>& ShellEnv::getBackgroundJobs() const {
+    return background_jobs;
+}
 
 // Reads the specified initialisation file into memory
 void ShellEnv::parseSettings() {

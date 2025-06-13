@@ -19,13 +19,14 @@ private:
     ShellEnv& shellEnv;
     CommandLookup& commandLookup;
     
-    bool exec(const std::vector<char*>& args) const;
-    bool execPipe(const std::vector<char*>& args) const;
-    bool execBg(const std::vector<char*>& args) const;
-    bool execRedir(const std::vector<char*>& args) const;
+    bool exec(const std::vector<const char*>& args, pid_t& pid) const;
+    bool execBasic(const std::vector<const char*>& args) const;
+    bool execPipe(Command& cmd, bool isBuiltin = false) const;
+    bool execBg(Command& cmd, bool isBuiltin = false) const;
+    void execRedir(Command& cmd, bool isBuiltin = false) const;
     bool execBuiltin(const Command& cmd) const;
 
-    std::vector<char*> cmdToCharVec(Command& cmd) const;
+    const std::vector<const char*> cmdToCharVec(Command& cmd) const;
     std::vector<char*> strVecToCharVec(std::vector<std::string>& args) const;
 };
 

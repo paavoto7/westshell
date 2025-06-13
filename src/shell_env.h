@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 
 #include "history.h"
 #include "command_lookup.h"
@@ -14,8 +15,8 @@ public:
     // These are all currently global, but that might/should change
     std::string user;
     std::string homeDir;
-    pid_t mainPid;
-    std::string PATH;
+    const pid_t mainPid;
+    const std::string PATH;
 
     History history;
     CommandLookup commandLookup;
@@ -24,9 +25,15 @@ public:
 
     const std::unordered_map<std::string, std::string>& getSettings() const;
     std::string_view getSetting(const std::string& key) const;
+
+    void addBackgroundJob(pid_t pid);
+    void reapBackgroundJobs();
+    const std::unordered_set<pid_t>& getBackgroundJobs() const;
+    
     
 private:
     std::unordered_map<std::string, std::string> settings;
+    std::unordered_set<pid_t> background_jobs;
     
     void parseSettings();
 };

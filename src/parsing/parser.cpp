@@ -23,7 +23,9 @@ namespace Parser {
         Command* current = &commands.back();
         
         using TokenType = Tokenizer::TokenType;
-        for (const auto& token: tokens) {
+        const size_t len = tokens.size();
+        for (size_t i = 0; i < len; ++i) {
+            const auto& token = tokens[i];
             switch (token.type) {
                 case TokenType::Word:
                     if (current->executable.empty()) {
@@ -37,6 +39,13 @@ namespace Parser {
                     break;
                 case TokenType::Operator:
                     current->op = operators.at(token.text);
+                    if (current->op == Operator::Redirection) {
+                        if (i + 1 < len) {
+                            current->outFile = tokens[i + 1].text;
+                            ++i; // Jump over the next token as it is only a filename
+                        }
+                        if (i + 1 == len) break;
+                    }
                     // In case of an operator, add another command
                     commands.emplace_back();
                     current = &commands.back();
