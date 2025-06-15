@@ -4,7 +4,6 @@
 #include <filesystem>
 
 #include "parsing/parser.h"
-#include "builtins.h"
 #include "style.h"
 #include "signals.h"
 
@@ -30,8 +29,10 @@ int Shell::run() {
         // The signals don't work well with getline
         // Might need to use something else instead of getline
         if (Signals::signalStatus != 0) {
-            Signals::signalStatus = 0;
             break;
+        } else if (Signals::childSignalStatus != 0) {
+            Signals::childSignalStatus = 0;
+            shellEnv.reapBackgroundJobs();
         }
         
         // Ignore if empty or only whitespace
@@ -42,11 +43,8 @@ int Shell::run() {
         // Add to history
         shellEnv.history.saveEntry(command);
         
-        // Get the parsed commands, calls overloaded function with tokenized command
-        auto parsedCommand = Parser::parse(command);
-        
         // In the case of an error or exit, break out of the loop
-        if (!executor.executeExternalCommand(parsedCommand))
+        if (!executor.executeExternalCommand(Parser::parse(command)))
             break;
     }
     return exitCode;

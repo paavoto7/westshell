@@ -3,7 +3,6 @@
 
 #include <unordered_map>
 #include <string>
-#include <string_view>
 #include <unordered_set>
 
 #include "history.h"
@@ -24,12 +23,11 @@ public:
     ShellEnv();
 
     const std::unordered_map<std::string, std::string>& getSettings() const;
-    std::string_view getSetting(const std::string& key) const;
+    const std::string& getSetting(const std::string& key) const;
 
     void addBackgroundJob(pid_t pid);
     void reapBackgroundJobs();
     const std::unordered_set<pid_t>& getBackgroundJobs() const;
-    
     
 private:
     std::unordered_map<std::string, std::string> settings;

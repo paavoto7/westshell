@@ -31,9 +31,9 @@ const std::unordered_map<std::string, std::string>& ShellEnv::getSettings() cons
 }
 
 // Get a setting loaded from the ini file
-std::string_view ShellEnv::getSetting(const std::string& key) const {
+const std::string& ShellEnv::getSetting(const std::string& key) const {
     // Might do the function with std::optional<std::string_view> later
-    static const std::string_view empty("");
+    static const std::string empty("");
     auto item = settings.find(key);
     // Not the safest solution at the moment, but will do for now
     return item != settings.end() ? item->second : empty;
