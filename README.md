@@ -7,7 +7,9 @@ how shells work. I'm incrementally building it with more features over time.
 - C++17
 - Make
 
-The project currently has no external dependencies beyond the C++ standard library and some parts of the C standard library. It uses `unistd.h` for system calls, so it requires a POSIX-compliant system.
+The project currently has no external dependencies beyond the C++ standard 
+library and some parts of the C standard library. It uses `unistd.h` for 
+system calls, so it requires a POSIX-compliant system.
 
 ### Building
 ```
@@ -21,8 +23,13 @@ make
 
 ## Features
 The project can currently run external programs with basic argument support.
-Commands are parsed by splitting on spaces, so only simple commands (for example
-`executable arg1 arg2 ...`) are supported.
+To exit the program, use the command `exit`, `Ctrl+D` or `Ctrl+C` (Press an enter after).
+
+Currently supported operations are:
+- Piping ( | )
+- Forward redirection ( > )
+- Background jobs ( & )
+    - Currently not working as expected
 
 ### Builtins
 Current builtin commands include:
@@ -30,13 +37,14 @@ Current builtin commands include:
 - echo
 - history
 - hash
+- exit
+
+Builtin commands can only take single argument as of now
 
 ### Planned features
-- Piping ( | )
-- Quoted arguments ("like this")
-- Input/output redirection
 - History navigation (with arrow keys)
-- Background processes
+- Other redirection operations
+- Background processes (Currently doesn't work properly)
 
 The code structure and organisation are very much subject to change.
 My primary goal is to first to implement the core functionality and refine from there.
