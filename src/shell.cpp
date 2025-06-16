@@ -7,7 +7,7 @@
 #include "style.h"
 #include "signals.h"
 
-Shell::Shell() : shellEnv(), executor(shellEnv, exitCode) {}
+Shell::Shell() : shellEnv(), executor(shellEnv, shellEnv.exitCode) {}
 
 // Runs the shell program
 int Shell::run() {
@@ -47,7 +47,7 @@ int Shell::run() {
         if (!executor.executeExternalCommand(Parser::parse(command)))
             break;
     }
-    return exitCode;
+    return shellEnv.exitCode;
 }
 
 void Shell::getPromptPath(std::string& promptPath) {

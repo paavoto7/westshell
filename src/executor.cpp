@@ -240,17 +240,9 @@ void Executor::execRedir(const Command& cmd) {
 }
 
 bool Executor::execBuiltin(const Command& cmd) {
-    auto control = Builtins::handleBuiltin(cmd, shellEnv);
-    using Builtins::Control;
-
-    // Go in if command was a builtin
-    if (control != Control::NONE) {
-        if (control == Control::BREAK) {
-            // Need to add support for exit codes at some point
-            return false;
-        }
-    }
-    return true;
+    return Builtins::handleBuiltin(cmd, shellEnv) == Builtins::Control::BREAK
+        ? false
+        : true;
 }
 
 // Waits for the given pid and sets exit status accordingly

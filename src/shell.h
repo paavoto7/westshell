@@ -16,8 +16,6 @@ private:
     ShellEnv shellEnv;
     Executor executor;
 
-    int exitCode = 0;
-
     const std::string primaryColour = "primaryColour";
     const std::string secondaryColour = "secondaryColour";
 

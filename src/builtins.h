@@ -13,11 +13,9 @@ namespace Builtins {
     enum class Control {
         CONTINUE,
         BREAK,
-        NONE,
-        EMPTY
     };
 
-    enum class Builtin { cd, echo, history, hash, exit };
+    enum class Builtin { cd, echo, history, hash, exit, jobs };
 
     // Could also have functions as values here
     inline const std::unordered_map<std::string, Builtin> builtin_commands {
@@ -25,10 +23,11 @@ namespace Builtins {
         {"echo", Builtin::echo},
         {"history", Builtin::history},
         {"hash", Builtin::hash}, 
-        {"exit", Builtin::exit}
+        {"exit", Builtin::exit},
+        {"jobs", Builtin::jobs}
     };
 
-    Control handleBuiltin(const Command& cmd, const ShellEnv& shellEnv);
+    Control handleBuiltin(const Command& cmd, ShellEnv& shellEnv);
 
     inline bool isBuiltin(const Command& cmd) {
         return builtin_commands.count(cmd.executable);
@@ -40,8 +39,11 @@ namespace Builtins {
     
     void cd(const std::string& path);
     void echo(const std::string& message);
+    void echo(const std::vector<std::string>& messages);
     void history(const History& history);
     void hash(const std::unordered_map<std::string, bool>& lookupCache);
+    void exit(const Command& cmd, ShellEnv& shellEnv);
+    void jobs(const ShellEnv& shellEnv);
 }
 
 #endif // BUILTINS_H

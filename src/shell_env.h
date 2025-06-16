@@ -16,6 +16,7 @@ public:
     std::string homeDir;
     const pid_t mainPid;
     const std::string PATH;
+    int exitCode = 0;
 
     History history;
     CommandLookup commandLookup;
