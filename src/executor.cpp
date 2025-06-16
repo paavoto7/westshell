@@ -12,7 +12,7 @@
 Executor::Executor(ShellEnv& shellEnv, int& exitCode)
     : exitCode(exitCode), shellEnv(shellEnv), commandLookup(shellEnv.commandLookup) {};
 
-[[nodiscard]] bool Executor::executeExternalCommand(const std::vector<Command>& commands) const {
+[[nodiscard]] bool Executor::executeExternalCommand(const std::vector<Command>& commands) {
     bool success = true;
     const auto cmdsLen = commands.size();
 
@@ -61,7 +61,7 @@ Executor::Executor(ShellEnv& shellEnv, int& exitCode)
 
 // Forks the current process and executes the specified command in the child.
 // Takes a reference to a pid_t to store the child’s PID, allowing the caller to wait or manage it.
-bool Executor::exec(const std::vector<const char*>& args, pid_t& childPid) const {
+bool Executor::exec(const std::vector<const char*>& args, pid_t& childPid) {
     // execvp() requires null-terminated arrays.
     if (args.empty() || args.back() != nullptr) {
         return false;
@@ -81,17 +81,12 @@ bool Executor::exec(const std::vector<const char*>& args, pid_t& childPid) const
     return true;
 }
 
-bool Executor::execBasic(const std::vector<const char*>& args) const {
+bool Executor::execBasic(const std::vector<const char*>& args) {
     pid_t childPid;
     
     if (exec(args, childPid)) {
         // Main process
-        int status = 0;
-        waitpid(childPid, &status, 0);
-        // Get the childs status code
-        if (WIFEXITED(status)) {
-            exitCode = WEXITSTATUS(status);
-        }
+        waitChildPid(childPid);
         return true;
     } else {
         return false;
@@ -99,7 +94,7 @@ bool Executor::execBasic(const std::vector<const char*>& args) const {
 }
 
 // Starts a child process in the backgorund.
-bool Executor::execBg(const Command& cmd) const {
+bool Executor::execBg(const Command& cmd) {
     // At the moment this doesn't release the terminal to the parent
     pid_t childPid;
     if (cmd.isBuiltin) {
@@ -121,7 +116,7 @@ bool Executor::execDup(
     const std::vector<int>& fds, // Makes easier to use in both pipe and redirection
     int fdOut,
     int fdIn)
-const {
+{
 
     if (cmd.executable.empty()) return false;
 
@@ -163,7 +158,7 @@ const {
 
 // Executes the specified pipeline of commands. Creates N-1 pipes between commands.
 // Currently doesn't support other operations at the ends of the pipeline.
-bool Executor::execPipe(const std::vector<Command>& commands) const {
+bool Executor::execPipe(const std::vector<Command>& commands) {
     std::vector<pid_t> pipePids;
     std::vector<int> pipes;
 
@@ -194,22 +189,15 @@ bool Executor::execPipe(const std::vector<Command>& commands) const {
         close(pipe);
     }
     
-    int status;
-    for (auto pid: pipePids) {
-        waitpid(pid, &status, 0);
-        // Get the childs status code
-        if (WIFEXITED(status)) {
-            exitCode = WEXITSTATUS(status);
-        } else {
-            exitCode = 1;
-        }
+    for (auto childPid: pipePids) {
+        waitChildPid(childPid);
     }
     return true;
 }
 
 // Redirects command output to the file specified
 // At the moment only works for output and not input 
-void Executor::execRedir(const Command& cmd) const {
+void Executor::execRedir(const Command& cmd) {
     if (cmd.outFile.empty()) {
         std::cerr << "No output file specified" << std::endl;
         exitCode = 1;
@@ -247,18 +235,11 @@ void Executor::execRedir(const Command& cmd) const {
         }
         close(outFile);
 
-        int status;
-        waitpid(childPid, &status, 0);
-        // Get the childs status code
-        if (WIFEXITED(status)) {
-            exitCode = WEXITSTATUS(status);
-        } else {
-            exitCode = 1;
-        }
+        waitChildPid(childPid);
     }
 }
 
-bool Executor::execBuiltin(const Command& cmd) const {
+bool Executor::execBuiltin(const Command& cmd) {
     auto control = Builtins::handleBuiltin(cmd, shellEnv);
     using Builtins::Control;
 
@@ -270,6 +251,18 @@ bool Executor::execBuiltin(const Command& cmd) const {
         }
     }
     return true;
+}
+
+// Waits for the given pid and sets exit status accordingly
+void Executor::waitChildPid(pid_t childPid) {
+    int status;
+    waitpid(childPid, &status, 0);
+    // Get the childs status code
+    if (WIFEXITED(status)) {
+        exitCode = WEXITSTATUS(status);
+    } else {
+        exitCode = 1;
+    }
 }
 
 // Converts a command struct (exec and args) into a char* vector.
