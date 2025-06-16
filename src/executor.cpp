@@ -20,9 +20,8 @@ Executor::Executor(ShellEnv& shellEnv, int& exitCode)
         const auto& cmd = commands[i];
         if (cmd.executable.empty()) continue;
 
-        bool isBuiltin = Builtins::isBuiltin(cmd);
          // Saves from forking and unnecessary execvp
-        if (!isBuiltin && !commandLookup.findExecutable(cmd.executable.c_str(), shellEnv.PATH)) {
+        if (!cmd.isBuiltin && !commandLookup.findExecutable(cmd.executable.c_str(), shellEnv.PATH)) {
             // Currently makes no distinction between not found and no permission
             std::cout << cmd.executable << ": Command not found or no permission" << std::endl;
             continue;
@@ -30,7 +29,7 @@ Executor::Executor(ShellEnv& shellEnv, int& exitCode)
 
         switch (cmd.op) {
             case Operator::None:
-                success = !isBuiltin ? execBasic(cmdToCharVec(cmd)) : execBuiltin(cmd);
+                success = !cmd.isBuiltin ? execBasic(cmdToCharVec(cmd)) : execBuiltin(cmd);
                 break;
             case Operator::Pipe: {
                 std::vector<Command> pipeline{ cmd };
@@ -47,10 +46,10 @@ Executor::Executor(ShellEnv& shellEnv, int& exitCode)
                 break;
             }
             case Operator::Background:
-                success = execBg(cmd, isBuiltin);
+                success = execBg(cmd);
                 break;
             case Operator::Redirection:
-                execRedir(cmd, isBuiltin);
+                execRedir(cmd);
                 break;
             default:
                 success = false;
@@ -100,10 +99,10 @@ bool Executor::execBasic(const std::vector<const char*>& args) const {
 }
 
 // Starts a child process in the backgorund.
-bool Executor::execBg(const Command& cmd, bool isBuiltin) const {
+bool Executor::execBg(const Command& cmd) const {
     // At the moment this doesn't release the terminal to the parent
     pid_t childPid;
-    if (isBuiltin) {
+    if (cmd.isBuiltin) {
         childPid = fork();
         if (childPid == 0) {
             return execBuiltin(cmd);
@@ -119,7 +118,6 @@ bool Executor::execBg(const Command& cmd, bool isBuiltin) const {
 bool Executor::execDup(
     pid_t& childPid,
     const Command& cmd,
-    bool isBuiltin,
     const std::vector<int>& fds, // Makes easier to use in both pipe and redirection
     int fdOut,
     int fdIn)
@@ -148,7 +146,7 @@ const {
             close(fd);
         }
 
-        if (isBuiltin) {
+        if (cmd.isBuiltin) {
             _exit(execBuiltin(cmd) ? 0 : 1); // Exit the child process
         } else {
             auto args = cmdToCharVec(cmd);
@@ -186,7 +184,6 @@ bool Executor::execPipe(const std::vector<Command>& commands) const {
         execDup(
             pipePids.emplace_back(),
             commands[i],
-            Builtins::isBuiltin(commands[i]),
             pipes,
             i < (len - 1) ? pipes[i * 2 + 1] : -1, // Current write end. If last, no outfile.
             i != 0 ? pipes[(i - 1) * 2] : -1 // Last read end. If first, no infile.
@@ -212,14 +209,14 @@ bool Executor::execPipe(const std::vector<Command>& commands) const {
 
 // Redirects command output to the file specified
 // At the moment only works for output and not input 
-void Executor::execRedir(const Command& cmd, bool isBuiltin) const {
+void Executor::execRedir(const Command& cmd) const {
     if (cmd.outFile.empty()) {
         std::cerr << "No output file specified" << std::endl;
         exitCode = 1;
         return;
     }
     // Note: Could break the following branches into seperate functions
-    if (isBuiltin) {
+    if (cmd.isBuiltin) {
         std::ofstream outFile(cmd.outFile);
         if (!outFile) {
             exitCode = 1;
@@ -243,7 +240,7 @@ void Executor::execRedir(const Command& cmd, bool isBuiltin) const {
         }
         
         pid_t childPid;
-        if (!execDup(childPid, cmd, isBuiltin, { outFile }, outFile, -1)) {
+        if (!execDup(childPid, cmd, { outFile }, outFile, -1)) {
             close(outFile);
             exitCode = 1;
             return;

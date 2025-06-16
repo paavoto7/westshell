@@ -2,7 +2,6 @@
 #define EXECUTOR_H
 
 #include <vector>
-#include <array>
 
 #include "command.h"
 #include "shell_env.h"
@@ -24,7 +23,6 @@ private:
     bool execDup(
         pid_t& childPid,
         const Command& cmd,
-        bool isBuiltin,
         const std::vector<int>& fds,
         int fdOut = -1,
         int fdIn = -1)
@@ -33,8 +31,8 @@ private:
     // These could be non-member functions, but for clarity they are here
     bool execBasic(const std::vector<const char*>& args) const;
     bool execPipe(const std::vector<Command>& commands) const;
-    bool execBg(const Command& cmd, bool isBuiltin = false) const;
-    void execRedir(const Command& cmd, bool isBuiltin = false) const;
+    bool execBg(const Command& cmd) const;
+    void execRedir(const Command& cmd) const;
     bool execBuiltin(const Command& cmd) const;
 
     const std::vector<const char*> cmdToCharVec(const Command& cmd) const;

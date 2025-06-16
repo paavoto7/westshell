@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "builtins.h"
+
 namespace Parser {
     // A simple whitespace parser.
     std::vector<std::string> simpleParser(const std::string& command) {
@@ -30,6 +32,7 @@ namespace Parser {
                 case TokenType::Word:
                     if (current->executable.empty()) {
                         current->executable = token.text;
+                        current->isBuiltin = Builtins::isBuiltin(token.text);
                     } else {
                         current->args.push_back(token.text);
                     }

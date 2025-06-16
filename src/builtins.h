@@ -33,6 +33,10 @@ namespace Builtins {
     inline bool isBuiltin(const Command& cmd) {
         return builtin_commands.count(cmd.executable);
     }
+
+    inline bool isBuiltin(const std::string& executable) {
+        return builtin_commands.count(executable);
+    }
     
     void cd(const std::string& path);
     void echo(const std::string& message);

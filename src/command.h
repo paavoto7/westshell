@@ -6,12 +6,12 @@
 
 enum class Operator { Pipe, Background, Redirection, None };
 
-// Contains executable name, arguments and flag for piping
-// Need to add support for other operators
+// Represents a single command
 struct Command {
     std::string executable;
     std::vector<std::string> args;
     Operator op = Operator::None;
+    bool isBuiltin;
 
     std::string inFile;
     std::string outFile;
