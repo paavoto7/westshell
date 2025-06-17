@@ -33,6 +33,7 @@ namespace Builtins {
             case Builtin::cd:
                 // If no path provided, go to home dir
                 cd(!cmd.args.empty() ? cmd.args[0] : shellEnv.homeDir);
+                shellEnv.setCurrentPath(); // Change current path
                 return Control::CONTINUE;
 
             case Builtin::echo:

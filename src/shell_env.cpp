@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <filesystem>
 #include <sys/wait.h>
 #include <pwd.h>
 
@@ -21,6 +22,7 @@ ShellEnv::ShellEnv()
 
     // Needed to be done here as we need the home dir
     history = History(homeDir);
+    setCurrentPath();
 }
 
 // Settings should stay unmodified at least in this version
@@ -54,6 +56,14 @@ void ShellEnv::reapBackgroundJobs() {
 
 const std::unordered_set<pid_t>& ShellEnv::getBackgroundJobs() const {
     return background_jobs;
+}
+
+void ShellEnv::setCurrentPath() {
+    // Get the path and modify it to be printed in the shell
+    currentPath = std::filesystem::current_path().string();
+    if (currentPath.find(homeDir) == 0) {
+        currentPath.replace(0, homeDir.length(), "~");
+    }
 }
 
 // Reads the specified initialisation file into memory

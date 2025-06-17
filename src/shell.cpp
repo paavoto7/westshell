@@ -1,7 +1,6 @@
 #include "shell.h"
 
 #include <iostream>
-#include <filesystem>
 
 #include "parsing/parser.h"
 #include "style.h"
@@ -13,12 +12,9 @@ Shell::Shell() : shellEnv(), executor(shellEnv, shellEnv.exitCode) {}
 int Shell::run() {
 
     std::string command;
-    std::string promptPath;
 
     while (true) {
-        getPromptPath(promptPath);
-        
-        printPrompt(promptPath);
+        printPrompt();
 
         if (!getline(std::cin, command)) {
             // Input error or EOF
@@ -50,18 +46,10 @@ int Shell::run() {
     return shellEnv.exitCode;
 }
 
-void Shell::getPromptPath(std::string& promptPath) {
-    // Get the path and modify it to be printed in the shell
-    promptPath = std::filesystem::current_path().string();
-    if (promptPath.find(shellEnv.homeDir) == 0) {
-        promptPath.replace(0, shellEnv.homeDir.length(), "~");
-    }
-}
-
-// Prints the hard-coded default prompt
-void Shell::printPrompt(const std::string& path) const {
+// Prints the hard-coded default prompt with the current path
+void Shell::printPrompt() const {
     std::cout
         << Style::getColorCode(shellEnv.getSetting(primaryColour)) << shellEnv.user << Style::reset
-        << ':' << Style::getColorCode(shellEnv.getSetting(secondaryColour)) << path << Style::reset
-        << "$ ";
+        << ':' << Style::getColorCode(shellEnv.getSetting(secondaryColour)) << shellEnv.currentPath
+        << Style::reset << "$ ";
 }

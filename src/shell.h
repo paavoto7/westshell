@@ -19,8 +19,7 @@ private:
     const std::string primaryColour = "primaryColour";
     const std::string secondaryColour = "secondaryColour";
 
-    void getPromptPath(std::string& promptPath);
-    void printPrompt(const std::string& path) const;
+    void printPrompt() const;
     
 };
 

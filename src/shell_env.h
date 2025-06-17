@@ -11,11 +11,16 @@
 // Encapsulates global shell environment.
 class ShellEnv {
 public:
+    // Note: Some responsibilities of this class should probably
+    // be split into distinct, more focused classes as the project evolves.
+    // ShellEnv should still own them, but the responsibilities
+    // would then be more maintanable and clearer.
+
     // These are all currently global, but that might/should change
     std::string user;
     std::string homeDir;
-    const pid_t mainPid;
     const std::string PATH;
+    std::string currentPath;
     int exitCode = 0;
 
     History history;
@@ -29,8 +34,12 @@ public:
     void addBackgroundJob(pid_t pid);
     void reapBackgroundJobs();
     const std::unordered_set<pid_t>& getBackgroundJobs() const;
+
+    void setCurrentPath();
     
 private:
+    const pid_t mainPid;
+
     std::unordered_map<std::string, std::string> settings;
     std::unordered_set<pid_t> background_jobs;
     
