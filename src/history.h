@@ -4,10 +4,9 @@
 #include <string>
 #include <vector>
 
-/* Simple wrapper class for history functionality
-   Loads history file on startup, and writes it
-   again after exiting.
-*/
+// Simple wrapper class for history functionality.
+// Loads history file on startup, and writes it
+// again after exiting.
 class History {
 public:
     History() = default;
@@ -25,7 +24,7 @@ private:
     std::string filename = ".westshell_history";
     std::string fileLocation;
     std::string homeDir;
-    // Need to implement a settings file
+
     int maxLines = 100;
 };
 

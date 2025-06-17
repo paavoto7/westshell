@@ -12,7 +12,7 @@
 Executor::Executor(ShellEnv& shellEnv, int& exitCode)
     : exitCode(exitCode), shellEnv(shellEnv), commandLookup(shellEnv.commandLookup) {};
 
-[[nodiscard]] bool Executor::executeExternalCommand(const std::vector<Command>& commands) {
+[[nodiscard]] bool Executor::executeCommands(const std::vector<Command>& commands) {
     bool success = true;
     const auto cmdsLen = commands.size();
 

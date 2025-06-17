@@ -2,9 +2,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <filesystem>
 #include <sys/wait.h>
-#include <unistd.h>
 #include <pwd.h>
 
 ShellEnv::ShellEnv()
@@ -48,8 +46,7 @@ void ShellEnv::reapBackgroundJobs() {
     pid_t child;
     // Check if any child process has finished and if so, remove it from the set
     while ((child = waitpid(-1, &status, WNOHANG)) > 0) {
-        auto it = background_jobs.find(child);
-        if (it != background_jobs.end()) {
+        if (background_jobs.find(child) != background_jobs.end()) {
             background_jobs.erase(child);
         }
     }

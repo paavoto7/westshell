@@ -3,9 +3,8 @@
 #include <sstream>
 #include <unistd.h>
 
-/* Finds whether an executable is in the path or not.
-    Should handle absolute paths and cases where PATH is null.
-*/
+// Finds whether an executable is in the path or not.
+// Should handle absolute paths and cases where PATH is null.
 bool CommandLookup::findExecutable(const char* command, const std::string& PATH) {
     const std::string cmdStr(command);
     

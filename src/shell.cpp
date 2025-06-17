@@ -44,7 +44,7 @@ int Shell::run() {
         shellEnv.history.saveEntry(command);
         
         // In the case of an error or exit, break out of the loop
-        if (!executor.executeExternalCommand(Parser::parse(command)))
+        if (!executor.executeCommands(Parser::parse(command)))
             break;
     }
     return shellEnv.exitCode;

@@ -12,7 +12,7 @@ class Executor {
 public:
     Executor(ShellEnv& shellEnv, int& exitCode);
 
-    [[nodiscard]] bool executeExternalCommand(const std::vector<Command>& commands);
+    [[nodiscard]] bool executeCommands(const std::vector<Command>& commands);
 
 private:
     int& exitCode;
@@ -30,7 +30,8 @@ private:
         const Command& cmd,
         const std::vector<int>& fds,
         int fdOut = -1,
-        int fdIn = -1);
+        int fdIn = -1
+    );
     
     // These could be non-member functions, but for clarity they are here
     bool execBasic(const std::vector<const char*>& args);
