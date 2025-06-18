@@ -34,11 +34,11 @@ private:
     );
     
     // These could be non-member functions, but for clarity they are here
-    bool execBasic(const std::vector<const char*>& args);
+    void execBasic(const Command& cmd);
     bool execPipe(const std::vector<Command>& commands);
     bool execBg(const Command& cmd);
     void execRedir(const Command& cmd);
-    bool execBuiltin(const Command& cmd);
+    void execBuiltin(const Command& cmd);
     bool execLogical(const Command& cmd);
     
     void waitChildPid(pid_t childPid);

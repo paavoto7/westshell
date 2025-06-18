@@ -29,7 +29,7 @@ Executor::Executor(ShellEnv& shellEnv, int& exitCode)
 
         switch (cmd.op) {
             case Operator::None:
-                success = !cmd.isBuiltin ? execBasic(cmdToCharVec(cmd)) : execBuiltin(cmd);
+                execBasic(cmd);
                 break;
             case Operator::Pipe: {
                 std::vector<Command> pipeline{ cmd };
@@ -59,6 +59,7 @@ Executor::Executor(ShellEnv& shellEnv, int& exitCode)
                 success = false;
                 break;
         }
+        if (shellEnv.shouldExit) return false;
     }
     return success;
 }
@@ -85,15 +86,16 @@ bool Executor::exec(const std::vector<const char*>& args, pid_t& childPid) {
     return true;
 }
 
-bool Executor::execBasic(const std::vector<const char*>& args) {
+void Executor::execBasic(const Command& cmd) {
+    if (cmd.isBuiltin) {
+        execBuiltin(cmd);
+        return;
+    }
+
     pid_t childPid;
-    
-    if (exec(args, childPid)) {
+    if (exec(cmdToCharVec(cmd), childPid)) {
         // Main process
         waitChildPid(childPid);
-        return true;
-    } else {
-        return false;
     }
 }
 
@@ -104,7 +106,8 @@ bool Executor::execBg(const Command& cmd) {
     if (cmd.isBuiltin) {
         childPid = fork();
         if (childPid == 0) {
-            return execBuiltin(cmd);
+            execBuiltin(cmd);
+            return exitCode == 0;
         } else if (childPid == -1) {
             return false;
         }
@@ -146,7 +149,8 @@ bool Executor::execDup(
         }
 
         if (cmd.isBuiltin) {
-            _exit(execBuiltin(cmd) ? 0 : 1); // Exit the child process
+            execBuiltin(cmd);
+            _exit(exitCode); // Exit the child process
         } else {
             auto args = cmdToCharVec(cmd);
             execvp(args[0], const_cast<char* const*>(args.data()));
@@ -217,11 +221,10 @@ void Executor::execRedir(const Command& cmd) {
 
         // Change the cout buffer to the file outputstream and save original
         auto* originalBuf = std::cout.rdbuf(outFile.rdbuf());
-        bool success = execBuiltin(cmd);
+        execBuiltin(cmd);
 
         std::cout.flush();
         std::cout.rdbuf(originalBuf);
-        exitCode = success != 0;
 
     } else {
         int outFile = open(cmd.outFile.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644); // -rw-r--r--
@@ -244,13 +247,8 @@ void Executor::execRedir(const Command& cmd) {
 }
 
 bool Executor::execLogical(const Command& cmd) {
-    bool success;
-    if (cmd.isBuiltin) {
-        success = execBuiltin(cmd);
-    } else {
-        execBasic(cmdToCharVec(cmd));
-        success = exitCode == 0; // Anything else is a fail
-    }
+    execBasic(cmd); // Handles both builtin and external
+    bool success = exitCode == 0;
 
     if (cmd.op == Operator::LogicAnd) {
         return success;
@@ -263,10 +261,8 @@ bool Executor::execLogical(const Command& cmd) {
     return false; // If used correctly, should never come here
 }
 
-bool Executor::execBuiltin(const Command& cmd) {
-    return Builtins::handleBuiltin(cmd, shellEnv) == Builtins::Control::BREAK
-        ? false
-        : true;
+void Executor::execBuiltin(const Command& cmd) {
+    Builtins::handleBuiltin(cmd, shellEnv);
 }
 
 // Waits for the given pid and sets exit status accordingly

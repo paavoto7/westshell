@@ -22,6 +22,7 @@ public:
     const std::string PATH;
     std::string currentPath;
     int exitCode = 0;
+    bool shouldExit = false;
 
     History history;
     CommandLookup commandLookup;

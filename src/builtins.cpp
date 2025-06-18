@@ -96,6 +96,7 @@ namespace Builtins {
 
     // Sets only the exit code for now
     void exit(const Command& cmd, ShellEnv& shellEnv) {
+        shellEnv.shouldExit = true;
         if (!cmd.args.empty() && isNumber(cmd.args[0])) {
             shellEnv.exitCode = std::stoi(cmd.args[0]);
         }
