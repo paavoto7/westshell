@@ -51,6 +51,10 @@ Executor::Executor(ShellEnv& shellEnv, int& exitCode)
             case Operator::Redirection:
                 execRedir(cmd);
                 break;
+            case Operator::LogicAnd: case Operator::LogicOr:
+                if (!execLogical(cmd))
+                    ++i; // Skip next command
+                break;
             default:
                 success = false;
                 break;
@@ -237,6 +241,26 @@ void Executor::execRedir(const Command& cmd) {
 
         waitChildPid(childPid);
     }
+}
+
+bool Executor::execLogical(const Command& cmd) {
+    bool success;
+    if (cmd.isBuiltin) {
+        success = execBuiltin(cmd);
+    } else {
+        execBasic(cmdToCharVec(cmd));
+        success = exitCode == 0; // Anything else is a fail
+    }
+
+    if (cmd.op == Operator::LogicAnd) {
+        return success;
+    }
+    
+    if (cmd.op == Operator::LogicOr) {
+        return !success;
+    }
+
+    return false; // If used correctly, should never come here
 }
 
 bool Executor::execBuiltin(const Command& cmd) {

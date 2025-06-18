@@ -39,6 +39,7 @@ private:
     bool execBg(const Command& cmd);
     void execRedir(const Command& cmd);
     bool execBuiltin(const Command& cmd);
+    bool execLogical(const Command& cmd);
     
     void waitChildPid(pid_t childPid);
 

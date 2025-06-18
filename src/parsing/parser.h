@@ -15,7 +15,9 @@ namespace Parser {
     inline const std::unordered_map<std::string, Operator> operators {
         {"|", Operator::Pipe},
         {">", Operator::Redirection},
-        {"&", Operator::Background}
+        {"&", Operator::Background},
+        {"&&", Operator::LogicAnd},
+        {"||", Operator::LogicOr}
     };
 
     // A simple whitespace parser.

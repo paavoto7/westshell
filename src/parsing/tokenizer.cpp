@@ -46,6 +46,11 @@ bool Tokenizer::isOperator(char current) const {
     return operators.count(current);
 }
 
+// Avoids the need to convert to string at check time
+bool Tokenizer::isDoubleOperator(char current, char next) const {
+    return current == next && (current == '&' || current == '|');
+}
+
 void Tokenizer::handleWordToken(const std::string& command, int& index) {
     auto current = command[index];
     if (current == '"') {
@@ -63,7 +68,16 @@ void Tokenizer::handleWordToken(const std::string& command, int& index) {
             tokens.emplace_back(TokenType::Word, buffer);
             buffer.clear();
         }
-        tokens.emplace_back(TokenType::Operator, std::string() + current);
+
+        if (index + 1 < command.length() && isDoubleOperator(current, command[index + 1])) {
+            tokens.emplace_back(
+                TokenType::Operator,
+                std::string{current, command[index + 1]}
+            );
+            ++index;
+        } else {
+            tokens.emplace_back(TokenType::Operator, std::string(1, current));
+        }
     } else {
         buffer += current;
     }

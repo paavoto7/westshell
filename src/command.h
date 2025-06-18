@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-enum class Operator { Pipe, Background, Redirection, None };
+enum class Operator { Pipe, Background, Redirection, LogicAnd, LogicOr, None };
 
 // Represents a single command
 struct Command {

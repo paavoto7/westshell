@@ -22,11 +22,12 @@ private:
 
     void handleWordToken(const std::string& command, int& index);
 
-    // Set of recognized operator characters
+    // Set of recognized operator characters.
     inline static const std::unordered_set<char> operators{'|', '>', '&'};
     
     // Checks if a character is an operator defined in the operators set
     bool isOperator(char current) const;
+    bool isDoubleOperator(char current, char next) const;
 };
 
 #endif // TOKENIZER_H
