@@ -19,12 +19,11 @@ namespace Parser {
         return commands;
     }
 
-    std::vector<Command> parse(const std::vector<Tokenizer::Token>& tokens) {
+    std::vector<Command> parse(const std::vector<Token>& tokens) {
         std::vector<Command> commands;
         commands.emplace_back(); // Create first command
         Command* current = &commands.back();
         
-        using TokenType = Tokenizer::TokenType;
         const size_t len = tokens.size();
         for (size_t i = 0; i < len; ++i) {
             const auto& token = tokens[i];

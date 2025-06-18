@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "tokenizer.h"
+#include "token.h"
 #include "command.h"
 
 namespace Parser {
@@ -21,11 +22,13 @@ namespace Parser {
     std::vector<std::string> simpleParser(const std::string& command);
 
     // Parses the given tokens into a vector of commands to be executed
-    std::vector<Command> parse(const std::vector<Tokenizer::Token>& tokens);
+    std::vector<Command> parse(const std::vector<Token>& tokens);
     
     // Calls tokenize function and passes the return value to overloaded function
     inline std::vector<Command> parse(const std::string& command) {
-        return parse(Tokenizer::tokenize(command));    
+        // Note: Could be handled in other ways, but this integrates seamlessly
+        static Tokenizer tokenizer; // Not safe if multithreaded
+        return parse(tokenizer.tokenize(command)); 
     };
     
 } // namespace Parser

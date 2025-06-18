@@ -1,54 +1,34 @@
 #include "tokenizer.h"
 
-namespace Tokenizer {
+std::vector<Token> Tokenizer::tokenize(const std::string& command) {
+    // Initialise
+    buffer.clear();
+    tokens.clear();
+    state = TokenType::Word;
 
-std::vector<Token> tokenize(const std::string& command) {
-    std::vector<Token> tokens;
-
-    // Consider using a distinct enum as state
-    TokenType state = TokenType::Word;
-    std::string buffer;
-    for (auto current: command) {
-
+    for (int i = 0; i < command.length(); ++i) {
+        
         // Implements a simple state machine based on the type of token currently in
         switch (state) {
             case TokenType::Word:
-                if (current == '"') {
-                    state = TokenType::DQuote;
-                } else if (current == '\'') {
-                    state = TokenType::SQuote;
-                } else if (isspace(current)) {
-                    if (!buffer.empty()) {
-                        tokens.emplace_back(TokenType::Word, buffer);
-                        buffer.clear();
-                    }
-                } else if (isOperator(current)) {
-                    // Need to add support for multi-character operators
-                    if (!buffer.empty()) { // Bash allows operators without spaces
-                        tokens.emplace_back(TokenType::Word, buffer);
-                        buffer.clear();
-                    }
-                    tokens.emplace_back(TokenType::Operator, std::string() + current);
-                } else {
-                    buffer += current;
-                }
+                handleWordToken(command, i);
                 break;
             case TokenType::DQuote:
-                if (current == '"') {
+                if (command[i] == '"') {
                     tokens.emplace_back(TokenType::DQuote, buffer);
                     buffer.clear();
                     state = TokenType::Word;
                 } else {
-                    buffer += current;
+                    buffer += command[i];
                 }
                 break;
             case TokenType::SQuote:
-                if (current == '\'') {
+                if (command[i] == '\'') {
                     tokens.emplace_back(TokenType::SQuote, buffer);
                     buffer.clear();
                     state = TokenType::Word;
                 } else {
-                    buffer += current;
+                    buffer += command[i];
                 }
                 break;
             default:
@@ -62,4 +42,29 @@ std::vector<Token> tokenize(const std::string& command) {
     return tokens;
 }
 
-} // namespace Tokenizer
+bool Tokenizer::isOperator(char current) const {
+    return operators.count(current);
+}
+
+void Tokenizer::handleWordToken(const std::string& command, int& index) {
+    auto current = command[index];
+    if (current == '"') {
+        state = TokenType::DQuote;
+    } else if (current == '\'') {
+        state = TokenType::SQuote;
+    } else if (isspace(current)) {
+        if (!buffer.empty()) {
+            tokens.emplace_back(TokenType::Word, buffer);
+            buffer.clear();
+        }
+    } else if (isOperator(current)) {
+        // Need to add support for multi-character operators
+        if (!buffer.empty()) { // Bash allows operators without spaces
+            tokens.emplace_back(TokenType::Word, buffer);
+            buffer.clear();
+        }
+        tokens.emplace_back(TokenType::Operator, std::string() + current);
+    } else {
+        buffer += current;
+    }
+}
